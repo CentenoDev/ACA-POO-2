@@ -1,0 +1,77 @@
+# 3D Print Manager - Sistema de Gestión de Producción
+**Proyecto Final - Programación Orientada a Objetos 2 (POO 2)** **Institución:** Corporación Unificada Nacional de Educación Superior (CUN)  
+**Autor:** Cristian  
+
+---
+
+## 📌 Planteamiento del Problema
+En el sector de la manufactura aditiva (impresión 3D), la determinación precisa de costos es un desafío crítico. Existen múltiples tecnologías, destacando FDM (Modelado por Deposición Fundida) y SLA/DLP (Resina). Cada tecnología posee variables de costo drásticamente distintas: mientras el filamento se calcula por gramos y consumo eléctrico, la resina implica insumos líquidos de alto valor y procesos de curado/lavado obligatorios.
+
+La falta de una herramienta automatizada genera errores en las cotizaciones, cálculos manuales repetitivos y la pérdida de trazabilidad en los pedidos. **3D Print Manager** soluciona este problema mediante un sistema de software robusto que automatiza el cálculo de costos utilizando **polimorfismo** para diferenciar tecnologías y garantiza la **persistencia de datos** en una base de datos relacional.
+
+---
+
+## 🏗️ Arquitectura y Aplicación de POO
+El proyecto ha sido desarrollado bajo el patrón arquitectónico **MVC (Modelo-Vista-Controlador)** y cumple al 100% con los requerimientos de la rúbrica de la asignatura:
+
+1. **Abstracción:** Implementación de la clase abstracta `Pieza3D` que define el molde lógico de cualquier impresión, y la interfaz `IPostProcesado` que establece un contrato obligatorio para el tratamiento de las piezas.
+2. **Herencia:** Las clases `ImpresionFDM` e `ImpresionResina` heredan los atributos base de `Pieza3D`.
+3. **Polimorfismo:** El método abstracto `calcularPrecioFinal()` es sobrescrito (`@Override`) en las clases hijas para aplicar la fórmula matemática específica de cada material.
+4. **Manejo de Excepciones:** Se implementó la clase personalizada `DatosInvalidosException` para evitar el ingreso de valores nulos o negativos (como pesos o tiempos irreales), garantizando la estabilidad (Clean Code).
+5. **Colecciones:** La clase `PedidoController` utiliza un `ArrayList<Pieza3D>` para gestionar el estado de los pedidos en memoria de forma dinámica.
+6. **Persistencia (CRUD):** Uso del patrón DAO (`ConexionDB`) para establecer un puente con MySQL mediante JDBC. El sistema ejecuta inserciones (`INSERT`) y lecturas (`SELECT`) de manera transparente.
+
+---
+
+## ⚙️ Manual Técnico
+
+### Stack Tecnológico
+* **Lenguaje:** Java (JDK 17 o superior).
+* **Interfaz Gráfica:** Java Swing (Diseño nativo / Custom Dark Theme).
+* **Base de Datos:** MySQL (XAMPP).
+* **Dependencias:** `mysql-connector-j-9.6.0.jar` (Ubicado en la carpeta `/lib`).
+
+### Configuración de la Base de Datos
+Antes de ejecutar el aplicativo, es obligatorio inicializar el servidor MySQL (puerto 3306) y ejecutar el siguiente script SQL en el gestor de su preferencia (ej. phpMyAdmin):
+
+```sql
+CREATE DATABASE IF NOT EXISTS impresion3d_db;
+USE impresion3d_db;
+
+CREATE TABLE pedidos (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_cliente VARCHAR(100) NOT NULL,
+    peso_gramos DOUBLE NOT NULL,
+    tiempo_horas DOUBLE NOT NULL,
+    tipo_impresion VARCHAR(50) NOT NULL, 
+    precio_final DOUBLE NOT NULL
+);
+
+NOTA:
+Instrucciones de Compilación y Ejecución
+Si se evalúa a través de la consola/terminal, navegue hasta el directorio src del proyecto y ejecute los siguientes comandos para enlazar correctamente el controlador JDBC:
+Compilar:
+javac -cp ".;../lib/*" com/impresion3d/Main.java
+Ejecutar:
+java -cp ".;../lib/*" com.impresion3d.Main
+
+📖 Manual de Usuario
+El software está diseñado para ser intuitivo y de rápida operación en un entorno de taller.
+
+Inicialización y Carga de Datos: Al abrir la aplicación, el sistema se conecta automáticamente a MySQL y despliega en la tabla central el historial completo de las piezas producidas anteriormente.
+
+Registro de un Nuevo Pedido: * Diríjase al panel lateral izquierdo "NUEVO PEDIDO".
+
+Ingrese el nombre del Cliente.
+
+Digite el Peso estimado de la pieza (en gramos) y el Tiempo de impresión (en horas) proyectado por el software laminador.
+
+Seleccione en el menú desplegable la Tecnología de Impresión (Filamento o Resina).
+
+Guardado y Procesamiento:
+
+Haga clic en "REGISTRAR Y GUARDAR".
+
+El sistema validará los campos. Si los datos son correctos, calculará el costo total utilizando la lógica de negocio correspondiente, almacenará el registro en la base de datos y actualizará la tabla visual en tiempo real.
+
+Se mostrará una notificación de éxito (✅).
